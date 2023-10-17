@@ -25,3 +25,17 @@ app.use("", organizationRoute);
 const server = app.listen(3000, () => {
   console.log("Nodejs has started at port 3000");
 });
+
+const io = new Server(server);
+
+io.on("connection", (socket) => {
+  socket.on("register", async (data) => {
+    const { username, password, email } = data;
+    await users.create({
+      username,
+      password,
+      email,
+    });
+    socket.emit("response", { status: 200, message: "Registered" });
+  });
+});
