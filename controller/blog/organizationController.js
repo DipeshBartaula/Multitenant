@@ -80,3 +80,46 @@ exports.createPayment = async (req, res) => {
     message: "Payment inserted succesfully",
   });
 };
+
+// users history table
+
+// DELETE user
+exports.deleteUser = async (req, res) => {
+  const userId = req.userId;
+  // GRAB ALL ASSOCIATED ORGS
+  const orgs = await sequelize.query(
+    `SELECT organizationNumber FROM userHistory_${userId}`,
+    {
+      type: QueryTypes.SELECT,
+    }
+  );
+  await sequelize.query(`DELETE FROM users WHERE id=?`, {
+    type: QueryTypes.DELETE,
+    replacements: [userId],
+  });
+  for (var i = 0; i < orgs.length; i++) {
+    await sequelize.query(
+      `DROP TABLE organization_${orgs[i].organizationNumber} `,
+      {
+        type: QueryTypes.DELETE,
+      }
+    );
+  }
+
+  res.json({
+    message: `User Delete successfull ${userId}`,
+  });
+};
+
+exports.getOrganization = async (req, res) => {
+  const currentOrganization = req.organizationNumber;
+  const data = await sequelize.query(
+    `SELECT users.username,org.* FROM organization_${currentOrganization} org JOIN users users ON org.userId = users.id `,
+    {
+      type: QueryTypes.SELECT,
+    }
+  );
+  res.json({
+    data,
+  });
+};
