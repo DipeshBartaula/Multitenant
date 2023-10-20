@@ -15,9 +15,27 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//chat page
-app.get("/chat", (req, res) => {
+// chat page here
+app.get("/chat/:id", (req, res) => {
+  sequelize.query(
+    `CREATE TABLE IF NOT EXISTS chats (
+      id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+      senderId INT REFERENCES users(id),
+      receiverId INT REFERENCES users(id),
+      messages VARCHAR(255) NOT NULL
+
+  ) `,
+    {
+      type: QueryTypes.CREATE,
+    }
+  );
   res.render("chat");
+});
+
+// receiver list
+app.get("/users", async (req, res) => {
+  const usersList = await users.findAll();
+  res.render("users", { usersList });
 });
 
 app.get("/", (req, res) => {
